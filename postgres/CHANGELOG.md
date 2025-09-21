@@ -1,3 +1,16 @@
+# 1.0.0 (2025-09-21)
+
+
+### Features
+
+* add Eruda for mobile debugging in development ([98c54c3](https://github.com/ctwhome/top-sveltekit/commit/98c54c3ac8d64d84d437c46e9296e3d8c284df85))
+* enhance feedback modal with browser and platform information ([c080f7f](https://github.com/ctwhome/top-sveltekit/commit/c080f7fcbb9d2beb9fe888ef01b4380ace375b4e))
+* implement floating label styles for login and registration forms ([f782f67](https://github.com/ctwhome/top-sveltekit/commit/f782f6747afdf2bfdd3845989c1be137aa1209a9))
+* implement ThemeChange component with theme switching functionality ([23e1e59](https://github.com/ctwhome/top-sveltekit/commit/23e1e596b3762816adce9ed6dd50baf86b21ac16))
+* initialize Svelte project with TypeScript, ESLint, and Prettier ([c78dccc](https://github.com/ctwhome/top-sveltekit/commit/c78dcccbe7d0e6944f5fe78cbb9ab8cb81679baf))
+* integrate semantic release for automated versioning and changelog generation ([9cc586d](https://github.com/ctwhome/top-sveltekit/commit/9cc586dad1ab7381ea8a101cdbf6ceab504d55df))
+* update mdsvex configuration and add type definitions ([1fb91f2](https://github.com/ctwhome/top-sveltekit/commit/1fb91f2e46b25c182f82636fdc5ed4c6bcf62835))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
