@@ -1,2 +1,0 @@
-
-- Enforce conventional commits.
