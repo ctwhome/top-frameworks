@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "",
-    "beforeDevCommand": "",
-    "devPath": "../build",
+    "beforeDevCommand": "pnpm svelte-kit dev",
+    "beforeBuildCommand": "pnpm svelte-kit build",
+    "devPath": "http://localhost:3000",
     "distDir": "../build"
   },
   "package": {
-    "productName": "lll",
+    "productName": "top-tauri-sveltekit",
     "version": "0.1.0"
   },
   "tauri": {
