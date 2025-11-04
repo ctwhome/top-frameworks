@@ -12,8 +12,9 @@ A collection of framework templates and starter projects, consolidated into a si
 
 ### SvelteKit
 
+
+- **[top-svelte-jazztolls](./top-svelte-jazztools/)** - SvelteKit with Jazz Tools (local-first & collaborative sync) - https://top-svelte-jazztools.vercel.app/
 - **[top-svelte-electric](./top-svelte-electric/)** - SvelteKit with ElectricSQL (local-first)
-- **[top-svelte-jazz](./top-svelte-jazz/)** - SvelteKit with Jazz (collaborative sync)
 - **[top-svelte-pocketbase](./top-svelte-pocketbase/)** - SvelteKit with PocketBase backend
 - **[top-svelte-postgres](./top-svelte-postgres/)** - SvelteKit with PostgreSQL integration
 - **[top-svelte-postgres-rls](./top-svelte-postgres-rls/)** - SvelteKit with PostgreSQL Row-Level Security
