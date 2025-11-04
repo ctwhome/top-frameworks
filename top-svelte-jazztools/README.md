@@ -1,191 +1,201 @@
-# Top Svelte - Modern SvelteKit Starter Template
+# Top Svelte - Jazz.tools Todo App
 
-A production-ready SvelteKit template with backend-agnostic authentication, designed for rapid experimentation with different BaaS providers and databases.
+A production-ready SvelteKit application with **Jazz.tools** integration, featuring a complete todo list application with real-time sync, offline support, and collaborative features.
 
 ## ✨ Features
 
 - **SvelteKit 2** with **Svelte 5** (latest runes API)
+- **Jazz.tools** - Real-time collaborative database as a service
 - **TailwindCSS 4** + **DaisyUI** for beautiful, responsive UI
-- **Backend-Agnostic Auth** - Plug in any backend without changing UI code
 - **TypeScript** - Full type safety
-- **Docker Compose** - Ready for backend services
 - **Bun** - Fast package manager and runtime
-- **Production-Ready** - Authentication UI, validation, error handling
+- **Production-Ready** - Complete todo app with all CRUD operations
 
-## 🎯 Purpose
+## 🎯 Jazz.tools Integration
 
-This template is designed to:
-- Experiment with different backends (Supabase, Firebase, PocketBase, custom APIs)
-- Prototype applications quickly with pre-built auth UI
-- Provide a clean, modular starting point for SvelteKit projects
-- Demonstrate best practices for Svelte 5 and modern web development
+This project showcases Jazz.tools as the backend, providing:
+
+- **Real-time Sync** - Changes appear instantly across all devices
+- **Offline-First** - Work offline, sync automatically when online
+- **End-to-End Encryption** - Data encrypted by default
+- **Automatic Conflict Resolution** - Jazz CRDTs handle concurrent edits
+- **No Backend Code** - Jazz handles all server-side logic
+- **Built-in Authentication** - Passkey/passphrase based auth
+
+## 📋 Todo App Features
+
+The application includes a full-featured todo list with:
+
+- ✅ **Add/Edit/Delete** todos
+- ✅ **Mark complete/incomplete**
+- ✅ **Priority levels** (low, medium, high)
+- ✅ **Due dates** with overdue detection
+- ✅ **Categories/tags** for organization
+- ✅ **Nested subtasks** for complex todos
+- ✅ **Filtering** (all/active/completed)
+- ✅ **Real-time sync** across devices
+- ✅ **Offline support** with automatic sync
 
 ## 🚀 Quick Start
 
-### Local Development
+### Prerequisites
 
+- **Node.js 20+** (Jazz requires Node 20 or later)
+- **Bun** (package manager)
+
+### Setup
+
+1. **Clone the repository**
 ```bash
-# Install dependencies
-bun install
+git clone <repository-url>
+cd top-svelte-jazztools
+```
 
-# Start development server
+2. **Install dependencies**
+```bash
+bun install
+```
+
+3. **Configure environment**
+
+Create a `.env` file (already configured):
+```bash
+PUBLIC_JAZZ_API_KEY=top-svelte@ctwhome.com  # Temporary key for development
+```
+
+For production, get a free API key at [dashboard.jazz.tools](https://dashboard.jazz.tools)
+
+4. **Start development server**
+```bash
 bun run dev
 ```
 
 The app will be available at `http://localhost:5173`
 
-### Docker Development
+### First Run
 
-```bash
-# Start with Docker Compose
-docker compose up
-```
+1. Open the app in your browser
+2. Click "Login" in the header
+3. Enter any email/password (8+ characters) to create an account
+4. Jazz automatically creates your account and syncs data
+5. Start adding todos!
 
-The app will be available at `http://localhost:5173`
+### Test Real-time Sync
+
+1. Open the app in two browser tabs
+2. Add/edit a todo in one tab
+3. Watch it appear instantly in the other tab 🎉
 
 ## 🏗️ Project Structure
 
 ```
 src/
 ├── lib/
-│   ├── auth/                  # Backend-agnostic auth module
-│   │   ├── types.ts          # Auth interfaces & types
-│   │   ├── store.svelte.ts   # Mock auth implementation
-│   │   └── index.ts          # Public exports
+│   ├── jazz/
+│   │   └── schema.ts         # Jazz CoValue schemas (Todo, Subtask, Account)
+│   ├── auth/
+│   │   ├── types.ts          # Auth interfaces
+│   │   ├── providers/
+│   │   │   └── jazz.ts       # Jazz auth adapter
+│   │   └── store.svelte.ts   # Auth store (exports Jazz provider)
 │   ├── components/
-│   │   └── ui/
-│   │       ├── Login/        # Complete login/register UI
-│   │       └── ...           # Other UI components
+│   │   ├── jazz/
+│   │   │   └── JazzProvider.svelte  # Jazz provider wrapper
+│   │   ├── todos/            # Todo components
+│   │   │   ├── TodoList.svelte
+│   │   │   ├── TodoItem.svelte
+│   │   │   ├── AddTodo.svelte
+│   │   │   ├── TodoFilters.svelte
+│   │   │   └── SubtaskList.svelte
+│   │   └── ui/               # Other UI components
 │   ├── stores/               # Application stores
 │   └── utils/                # Utility functions
 └── routes/                   # SvelteKit routes
-    ├── +layout.svelte
-    ├── +page.svelte
-    └── register/
+    ├── +layout.svelte        # Wraps app with JazzProvider
+    ├── +page.svelte          # Home page with todo app
+    └── ...
 ```
 
-## 🔐 Authentication System
+## 🔐 Authentication with Jazz
 
-The auth system is fully decoupled from any specific backend:
-
-### Current Implementation (Mock)
-
-- In-memory authentication with localStorage persistence
-- Accepts any email/password (8+ characters) for demo purposes
-- Maintains auth state across page reloads
-- Ready to be replaced with real backend
+Jazz provides built-in authentication that's seamlessly integrated:
 
 ### How It Works
 
+1. **Account Creation** - Jazz automatically creates an account on first login
+2. **Passkey/Passphrase** - Secure authentication without traditional passwords
+3. **Cross-Device Sync** - Login from any device and access your data
+4. **Local-First** - Works offline, syncs when online
+
+### Auth Adapter
+
+The project includes a `JazzAuthProvider` that implements the `AuthProvider` interface, allowing existing auth UI components to work without modification:
+
 ```typescript
-// All auth UI components use this interface
+// Import the Jazz-powered auth store
 import { authStore } from '$lib/auth';
 
-// Login
+// Same API as before, now powered by Jazz
 const result = await authStore.login({ email, password });
-
-// Register
-const result = await authStore.register({
-  email,
-  password,
-  passwordConfirm
-});
-
-// Logout
-await authStore.logout();
-
-// Check auth state
-if (authStore.isAuthenticated) {
-  console.log(authStore.user?.email);
-}
 ```
 
 ### UI Components
 
-Pre-built and ready to use:
-- `LoginButton.svelte` - Login modal with dropdown menu
-- `EmailLoginForm.svelte` - Email/password login form
-- `RegisterForm.svelte` - Registration form with validation
+All existing auth components work with Jazz:
+- `LoginButton.svelte` - Login modal
+- `EmailLoginForm.svelte` - Login form
+- `RegisterForm.svelte` - Registration form
 - `LogOutButton.svelte` - Logout button
-- Full form validation and error handling
 
-## 🔌 Integrating Your Backend
+## 🎨 Jazz Schema Design
 
-To connect a real backend, implement the `AuthProvider` interface:
-
-### 1. Install your backend SDK
-
-```bash
-# Example: Supabase
-bun add @supabase/supabase-js
-
-# Example: Firebase
-bun add firebase
-
-# Example: PocketBase
-bun add pocketbase
-```
-
-### 2. Create your auth implementation
-
-Create a new file `src/lib/auth/providers/supabase.ts`:
+The todo app uses Jazz's CoValue schemas for collaborative data:
 
 ```typescript
-import { createClient } from '@supabase/supabase-js';
-import type { AuthProvider, User, LoginCredentials, RegisterCredentials, AuthResponse } from '../types';
+// src/lib/jazz/schema.ts
 
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
+// Todo item with all features
+export const Todo = co.map({
+  title: z.string(),
+  completed: z.boolean(),
+  priority: z.literal(['low', 'medium', 'high']),
+  dueDate: z.optional(z.date()),
+  category: z.optional(z.string()),
+  createdAt: z.date(),
+  subtasks: co.optional(SubtaskList)
+});
 
-class SupabaseAuthProvider implements AuthProvider {
-  user = $state<User | null>(null);
-  isAuthenticated = $derived(!!this.user);
-
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const { data, error } = await supabase.auth.signInWithPassword(credentials);
-
-    if (error) {
-      return { success: false, error: error.message };
+// Account with todo list
+export const TodoAccount = co
+  .account({
+    root: TodoAccountRoot,
+    profile: co.profile({ name: z.string() })
+  })
+  .withMigration((account) => {
+    // Initialize todos list on first login
+    if (!account.$jazz.has('root')) {
+      account.$jazz.set('root', { todos: [] });
     }
-
-    this.user = this.mapUser(data.user);
-    return { success: true, user: this.user };
-  }
-
-  // Implement other methods...
-}
-
-export const authStore = new SupabaseAuthProvider();
+  });
 ```
 
-### 3. Update the export
+### Jazz Concepts
 
-In `src/lib/auth/store.svelte.ts`, replace the mock implementation:
+- **CoMap** - Like a JavaScript object, for structured data
+- **CoList** - Like an array, for ordered lists
+- **CRDTs** - Conflict-free replicated data types that sync automatically
+- **Reactive** - Changes propagate instantly via Svelte 5 runes
 
-```typescript
-// Replace MockAuthProvider with your implementation
-export { authStore } from './providers/supabase';
-```
+## 📊 Jazz Cloud
 
-**That's it!** All UI components continue to work without any changes.
+This project uses Jazz Cloud for sync and storage:
 
-## 🐳 Docker Compose
+- **Free tier available** - Perfect for development and small apps
+- **Auto-scaling** - Jazz handles all infrastructure
+- **Global CDN** - Fast sync worldwide
+- **Self-hosting option** - Can host your own Jazz mesh if needed
 
-The `docker-compose.yml` is set up for easy backend integration:
-
-```yaml
-services:
-  frontend:
-    # SvelteKit dev server (already configured)
-
-  # Add your backend here:
-  backend:
-    image: your-backend-image
-    ports:
-      - "3000:3000"
-```
+Get an API key at [dashboard.jazz.tools](https://dashboard.jazz.tools) for production use.
 
 ## 📝 Available Scripts
 
@@ -241,40 +251,39 @@ Examples provided for:
 | Bun | Package manager & runtime |
 | Docker | Containerization |
 
-## 🎯 Use Cases
+## 🎯 Key Concepts Demonstrated
 
-Perfect for:
-- 🚀 **Rapid Prototyping** - Start building immediately with auth UI ready
-- 🔬 **Backend Experimentation** - Test different BaaS providers easily
-- 📚 **Learning** - Study modern SvelteKit patterns and architecture
-- 🏗️ **Production Apps** - Solid foundation for real applications
+This project showcases:
 
-## 🤝 Integration Examples
+- ✅ **Local-First Architecture** - Data lives on device, syncs in background
+- ✅ **Real-Time Collaboration** - See changes from other devices instantly
+- ✅ **Offline Support** - Full functionality without internet
+- ✅ **Svelte 5 Runes** - Modern reactive programming with `$state`, `$derived`, `$effect`
+- ✅ **TypeScript Safety** - Full type checking for Jazz schemas
+- ✅ **Component Architecture** - Modular, reusable UI components
+- ✅ **DaisyUI Design** - Beautiful UI with minimal custom CSS
 
-### Supabase
-```bash
-bun add @supabase/supabase-js
-# Implement AuthProvider interface
-# See integration guide above
-```
+## 🧪 Testing the App
 
-### Firebase
-```bash
-bun add firebase
-# Implement AuthProvider interface with Firebase Auth
-```
+### Test Real-Time Sync
 
-### PocketBase
-```bash
-bun add pocketbase
-# Implement AuthProvider interface with PocketBase SDK
-```
+1. Open the app in two browser windows side-by-side
+2. Add a todo in one window
+3. Watch it appear instantly in the other! ⚡
 
-### Custom API
-```typescript
-// Implement AuthProvider with fetch/axios
-// Full control over your authentication flow
-```
+### Test Offline Support
+
+1. Open browser DevTools → Network tab
+2. Toggle "Offline" mode
+3. Add/edit todos - they work offline!
+4. Toggle back online - changes sync automatically 🔄
+
+### Test Subtasks
+
+1. Add a todo
+2. Click "▶ Subtasks (0)" to expand
+3. Add subtasks within the todo
+4. Check them off as you complete them ✓
 
 ## 📖 Architecture Principles
 
@@ -291,13 +300,37 @@ bun add pocketbase
 3. **Implement AuthProvider** - Follow the integration guide above
 4. **Start Building** - Add your routes, components, and features
 
+## 🔧 Development
+
+```bash
+# Type checking
+bun run check
+
+# Linting
+bun run lint
+
+# Format code
+bun run format
+
+# Build for production
+bun run build
+
+# Preview production build
+bun run preview
+```
+
 ## 📚 Resources
 
+- [Jazz.tools Documentation](https://jazz.tools/docs)
+- [Jazz.tools Examples](https://github.com/garden-co/jazz/tree/main/examples)
 - [SvelteKit Documentation](https://svelte.dev/docs/kit)
 - [Svelte 5 Documentation](https://svelte.dev/docs/svelte)
 - [TailwindCSS Documentation](https://tailwindcss.com/docs)
 - [DaisyUI Documentation](https://daisyui.com/)
-- [Bun Documentation](https://bun.sh/docs)
+
+## 🤝 Contributing
+
+This is a demonstration project showcasing Jazz.tools with SvelteKit. Feel free to use it as a starting point for your own projects!
 
 ## 📄 License
 

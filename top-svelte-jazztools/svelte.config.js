@@ -1,5 +1,5 @@
 import { mdsvex } from 'mdsvex';
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -16,10 +16,9 @@ const config = {
 		})
 	],
 	kit: {
-		// Vercel adapter with edge runtime
-		adapter: adapter({
-			runtime: 'edge'
-		})
+		// Auto adapter - works with most platforms
+		// For Jazz, we don't need edge runtime since all data ops are client-side
+		adapter: adapter()
 	},
 	extensions: ['.svelte', '.svx', '.md']
 };
