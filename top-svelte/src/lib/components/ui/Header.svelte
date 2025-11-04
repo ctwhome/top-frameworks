@@ -2,6 +2,7 @@
 	import Logo from '$lib/assets/icons/Logo.svelte';
 	import FeedbackButton from '$lib/components/ui/feedback/FeedbackButton.svelte';
 	import Login from '$lib/components/ui/Login/LoginButton.svelte';
+	import LanguageSwitcher from '$lib/components/ui/LanguageSwitcher.svelte';
 	import { toggleMenu } from '$lib/stores/menu.store';
 	import IconamoonMenuBurgerHorizontalBold from '~icons/iconamoon/menu-burger-horizontal-bold';
 	import menuItems from '$lib/models/menu-itmes';
@@ -45,6 +46,7 @@
 			</div>
 
 			<FeedbackButton class="hidden sm:block" />
+			<LanguageSwitcher />
 			<ThemeChange class="z-50 ml-auto sm:ml-14 " />
 
 			<Login />

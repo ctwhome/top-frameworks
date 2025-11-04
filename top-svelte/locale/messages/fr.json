@@ -1,4 +1,24 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from fr!"
+	"hello_world": "Hello, {name} from fr!",
+	"home_title": "Bienvenue sur Top Svelte!",
+	"home_subtitle": "Un modèle moderne SvelteKit prêt pour l'intégration de votre backend",
+	"home_logged_in_title": "Vous êtes connecté!",
+	"home_logged_in_email": "Email:",
+	"home_logged_in_subtitle": "Ceci est une authentification fictive. Prêt à connecter votre backend préféré!",
+	"home_get_started_title": "Commencer",
+	"home_get_started_description": "Cliquez sur le bouton de connexion dans l'en-tête pour essayer l'interface d'authentification",
+	"home_get_started_note": "L'authentification fictive accepte n'importe quel email/mot de passe (8+ caractères)",
+	"home_features_title": "✨ Fonctionnalités",
+	"home_features_sveltekit": "SvelteKit 2 avec Svelte 5",
+	"home_features_tailwind": "TailwindCSS 4 + DaisyUI",
+	"home_features_auth": "Interface d'authentification indépendante du backend",
+	"home_features_typescript": "Support TypeScript",
+	"home_features_docker": "Docker Compose prêt",
+	"home_integration_title": "🔌 Prêt pour l'Intégration",
+	"home_integrations_supabase": "Supabase",
+	"home_integrations_firebase": "Firebase",
+	"home_integrations_pocketbase": "PocketBase",
+	"home_integrations_custom": "APIs personnalisées",
+	"home_integrations_any": "Toute solution BaaS"
 }

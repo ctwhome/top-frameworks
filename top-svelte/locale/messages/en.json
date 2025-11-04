@@ -1,4 +1,24 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from en!"
+	"hello_world": "Hello, {name} from en!",
+	"home_title": "Welcome to Top Svelte!",
+	"home_subtitle": "A modern SvelteKit starter template ready for your backend integration",
+	"home_logged_in_title": "You're logged in!",
+	"home_logged_in_email": "Email:",
+	"home_logged_in_subtitle": "This is a mock authentication. Ready to connect your favorite backend!",
+	"home_get_started_title": "Get Started",
+	"home_get_started_description": "Click the Login button in the header to try the authentication UI",
+	"home_get_started_note": "Mock auth accepts any email/password (8+ characters)",
+	"home_features_title": "✨ Features",
+	"home_features_sveltekit": "SvelteKit 2 with Svelte 5",
+	"home_features_tailwind": "TailwindCSS 4 + DaisyUI",
+	"home_features_auth": "Backend-agnostic auth interface",
+	"home_features_typescript": "TypeScript support",
+	"home_features_docker": "Docker Compose ready",
+	"home_integration_title": "🔌 Ready for Integration",
+	"home_integrations_supabase": "Supabase",
+	"home_integrations_firebase": "Firebase",
+	"home_integrations_pocketbase": "PocketBase",
+	"home_integrations_custom": "Custom APIs",
+	"home_integrations_any": "Any BaaS solution"
 }

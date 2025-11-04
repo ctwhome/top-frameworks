@@ -7,6 +7,7 @@
 	import menuItems from '$lib/models/menu-itmes';
 	import { authStore } from '$lib/auth';
 	import Login from '$lib/components/ui/Login/LoginButton.svelte';
+	import LanguageSwitcher from '$lib/components/ui/LanguageSwitcher.svelte';
 
 	let containerElement: HTMLElement | undefined = $state();
 	let startX: number;
@@ -128,6 +129,12 @@
 					</li>
 				{/each}
 			</ul>
+
+			<!-- Language Switcher -->
+			<div class="mt-6 px-2">
+				<div class="mb-2 text-xs font-semibold uppercase text-base-content/60">Language</div>
+				<LanguageSwitcher />
+			</div>
 		</div>
 
 		<FeedbackButton />
