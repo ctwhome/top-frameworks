@@ -25,7 +25,7 @@
 				<IconamoonMenuBurgerHorizontalBold class="size-6" />
 			</button>
 			<a
-				class="no-drag mr-3 h-auto max-w-[140px] flex-initial shrink-0 select-none sm:max-w-[160px]"
+				class="no-drag mr-3 h-auto max-w-[120px] flex-initial shrink-0 select-none sm:max-w-[160px]"
 				href="/"
 			>
 				<Logo />
@@ -48,7 +48,7 @@
 			<!-- Right side buttons -->
 			<div class="sm:ml-14" />
 
-			<div  class="hidden sm:block" >
+			<div class="hidden sm:block" >
 				<FeedbackButton/>
 				<LanguageSwitcher />
 				<ThemeChange class="z-50 ml-auto" />

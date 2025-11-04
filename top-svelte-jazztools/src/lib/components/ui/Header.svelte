@@ -67,7 +67,7 @@
 <nav class="bien-nav mb-10">
 	<div class="bien-glass"></div>
 	<div class="bien-glass-edge"></div>
-	<div class="relative container mx-auto py-2">
+	<div class="relative container mx-auto py-2 sm:px-4">
 		<!--Desktop Header-->
 		<header class="flex items-center gap-3 px-2 sm:px-0">
 			<button
@@ -78,7 +78,7 @@
 				<IconamoonMenuBurgerHorizontalBold class="size-6" />
 			</button>
 			<a
-				class="no-drag mr-3 h-auto max-w-[140px] flex-initial shrink-0 select-none sm:max-w-[160px]"
+				class="no-drag mr-3 h-auto w-30 sm:w-40 flex-initial shrink-0 select-none "
 				href="/"
 			>
 				<Logo />
@@ -101,9 +101,12 @@
 			<!-- Right side buttons -->
 			<div class="sm:ml-14" />
 
-			<FeedbackButton class="hidden sm:block" />
-			<LanguageSwitcher />
-			<ThemeChange class="z-50 ml-auto" />
+			<div class="hidden sm:block" >
+				<FeedbackButton/>
+				<LanguageSwitcher />
+				<ThemeChange class="z-50 ml-auto" />
+			</div>
+
 
 			<!-- Jazz Account Indicator / Login Button -->
 			{#if me.current}
