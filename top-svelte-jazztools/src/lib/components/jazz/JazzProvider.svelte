@@ -11,9 +11,9 @@
 	 * This component should wrap the entire app in +layout.svelte
 	 */
 	import { JazzSvelteProvider } from 'jazz-tools/svelte';
+	import { DemoAuth } from 'jazz-tools';
 	import { TodoAccount } from '$lib/jazz/schema';
 	import { PUBLIC_JAZZ_API_KEY } from '$env/static/public';
-	import JazzAuth from './JazzAuth.svelte';
 
 	let { children } = $props();
 
@@ -21,10 +21,14 @@
 	const sync = {
 		peer: `wss://cloud.jazz.tools/?key=${PUBLIC_JAZZ_API_KEY}`
 	};
+
+	// Use DemoAuth - creates anonymous accounts automatically
+	// Users can upgrade to authenticated accounts via login button
+	const auth = new DemoAuth({
+		appName: 'Top Svelte Todo'
+	});
 </script>
 
-<JazzSvelteProvider {sync} AccountSchema={TodoAccount}>
-	<JazzAuth appName="Top Svelte Todo">
-		{@render children?.()}
-	</JazzAuth>
+<JazzSvelteProvider {sync} {auth} AccountSchema={TodoAccount}>
+	{@render children?.()}
 </JazzSvelteProvider>

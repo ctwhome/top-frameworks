@@ -1,41 +1,29 @@
 <script lang="ts">
 	/**
-	 * Jazz Authentication Component
+	 * Login Modal Component
 	 *
-	 * Provides passkey authentication with passphrase recovery
-	 * - Passkeys: Primary auth using WebAuthn (biometric/device)
-	 * - Passphrase: Recovery key for cross-device access
+	 * Modal that shows passkey authentication with passphrase recovery
+	 * Only shown when user clicks "Login" button
 	 */
-	import { usePasskeyAuth, usePassphraseAuth, AccountCoState } from 'jazz-tools/svelte';
-	import { TodoAccount } from '$lib/jazz/schema';
+	import { usePasskeyAuth, usePassphraseAuth } from 'jazz-tools/svelte';
 	import { wordlist } from '$lib/jazz/wordlist';
 	import toast from 'svelte-french-toast';
 
 	interface Props {
-		children?: import('svelte').Snippet;
 		appName: string;
+		isOpen: boolean;
+		onClose: () => void;
 	}
 
-	let { children, appName }: Props = $props();
+	let { appName, isOpen, onClose }: Props = $props();
 
 	const passphraseAuth = usePassphraseAuth({ wordlist });
 	const auth = usePasskeyAuth({ appName });
-
-	// Use AccountCoState to check if user is authenticated
-	const me = new AccountCoState(TodoAccount);
 
 	let name = $state('');
 	let passphraseInput = $state('');
 	let showPassphrase = $state(false);
 	let showRecoveryLogin = $state(false);
-
-	// Track auth state reactively - user is signed in if me.current exists
-	let isSignedIn = $derived(me.current != null);
-
-	// Debug logging
-	$effect(() => {
-		console.log('Auth state - isSignedIn:', isSignedIn, 'me.current:', me.current);
-	});
 
 	function handleSignUp() {
 		if (!name.trim()) {
@@ -45,10 +33,18 @@
 		auth.current.signUp(name.trim());
 		showPassphrase = true;
 		toast.success('Account created! Save your recovery key below.');
+
+		// Close modal after short delay
+		setTimeout(() => {
+			onClose();
+			showPassphrase = false;
+		}, 8000);
 	}
 
 	function handleLogin() {
 		auth.current.logIn();
+		// Close modal after auth completes
+		setTimeout(() => onClose(), 1000);
 	}
 
 	function handlePassphraseLogin() {
@@ -57,70 +53,42 @@
 			return;
 		}
 		passphraseAuth.logIn(passphraseInput.trim());
+		// Close modal after auth completes
+		setTimeout(() => onClose(), 1000);
 	}
 
 	function copyPassphrase() {
 		navigator.clipboard.writeText(passphraseAuth.passphrase || '');
 		toast.success('Recovery key copied to clipboard!');
 	}
+
+	function handleBackdropClick(e: MouseEvent) {
+		if (e.target === e.currentTarget) {
+			onClose();
+		}
+	}
 </script>
 
-{#if isSignedIn}
-	<!-- User is signed in - render app -->
-	{#if children}
-		{@render children()}
-	{/if}
-
-	<!-- Show passphrase after signup or on demand -->
-	{#if showPassphrase && passphraseAuth.passphrase}
-		<div class="toast toast-top toast-center z-9999 max-w-2xl">
-			<div class="alert alert-warning shadow-lg">
-				<div class="w-full">
-					<div class="mb-2 flex items-start justify-between">
-						<h3 class="font-bold">🔑 Save Your Recovery Key</h3>
-						<button
-							type="button"
-							class="btn btn-ghost btn-sm"
-							onclick={() => (showPassphrase = false)}
-							aria-label="Close"
-						>
-							✕
-						</button>
-					</div>
-					<p class="mb-3 text-sm">
-						This key allows you to access your account on other devices. Keep it safe!
-					</p>
-					<textarea
-						readonly
-						value={passphraseAuth.passphrase}
-						rows={3}
-						class="textarea textarea-bordered w-full font-mono text-xs"
-					></textarea>
-					<div class="mt-2 flex gap-2">
-						<button class="btn btn-sm btn-primary" onclick={copyPassphrase}>
-							Copy Key
-						</button>
-						<button class="btn btn-sm btn-ghost" onclick={() => (showPassphrase = false)}>
-							I've Saved It
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	{/if}
-{:else}
-	<!-- Authentication UI -->
-	<div class="flex min-h-screen items-center justify-center bg-base-200 p-4">
-		<div class="w-full max-w-md rounded-lg border border-base-300 bg-base-100 p-8 shadow-lg">
-			<div class="mb-6 text-center">
-				<h1 class="mb-2 text-3xl font-bold">Welcome to Jazz Todo</h1>
-				<p class="text-base-content/70">
-					{#if showRecoveryLogin}
-						Sign in with your recovery key
-					{:else}
-						Create an account or sign in with passkey
-					{/if}
-				</p>
+{#if isOpen}
+	<!-- Modal Backdrop -->
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		onclick={handleBackdropClick}
+		role="dialog"
+		aria-modal="true"
+	>
+		<!-- Modal Content -->
+		<div class="w-full max-w-md rounded-lg border border-base-300 bg-base-100 p-8 shadow-xl">
+			<div class="mb-6 flex items-center justify-between">
+				<h2 class="text-2xl font-bold">Sign In</h2>
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm btn-circle"
+					onclick={onClose}
+					aria-label="Close"
+				>
+					✕
+				</button>
 			</div>
 
 			{#if showRecoveryLogin}
@@ -219,4 +187,42 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Show passphrase toast after signup -->
+	{#if showPassphrase && passphraseAuth.passphrase}
+		<div class="toast toast-top toast-center z-9999 max-w-2xl">
+			<div class="alert alert-warning shadow-lg">
+				<div class="w-full">
+					<div class="mb-2 flex items-start justify-between">
+						<h3 class="font-bold">🔑 Save Your Recovery Key</h3>
+						<button
+							type="button"
+							class="btn btn-ghost btn-sm"
+							onclick={() => (showPassphrase = false)}
+							aria-label="Close"
+						>
+							✕
+						</button>
+					</div>
+					<p class="mb-3 text-sm">
+						This key allows you to access your account on other devices. Keep it safe!
+					</p>
+					<textarea
+						readonly
+						value={passphraseAuth.passphrase}
+						rows={3}
+						class="textarea textarea-bordered w-full font-mono text-xs"
+					></textarea>
+					<div class="mt-2 flex gap-2">
+						<button class="btn btn-sm btn-primary" onclick={copyPassphrase}>
+							Copy Key
+						</button>
+						<button class="btn btn-sm btn-ghost" onclick={() => (showPassphrase = false)}>
+							I've Saved It
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 {/if}
