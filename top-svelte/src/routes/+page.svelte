@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { authStore } from '$lib/auth';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '$lib/i18n/messages';
 	import { locale } from '$lib/stores/locale.store';
 
 	// Force reactivity: messages will re-evaluate when locale changes
