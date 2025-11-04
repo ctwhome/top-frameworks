@@ -1,5 +1,5 @@
 import { mdsvex } from 'mdsvex';
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-vercel';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -16,13 +16,9 @@ const config = {
 		})
 	],
 	kit: {
-		// Static adapter for client-side only app
+		// Vercel adapter with edge runtime
 		adapter: adapter({
-			pages: 'build',
-			assets: 'build',
-			fallback: 'index.html',
-			precompress: false,
-			strict: false
+			runtime: 'edge'
 		})
 	},
 	extensions: ['.svelte', '.svx', '.md']
