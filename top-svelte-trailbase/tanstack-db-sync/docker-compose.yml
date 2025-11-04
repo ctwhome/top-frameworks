@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  trailbase:
+    image: trailbase/trailbase:latest
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./traildepot:/srv/traildepot
+    environment:
+      - TB_ADMIN_EMAIL=admin@example.com
+      - TB_ADMIN_PASSWORD=admin123
