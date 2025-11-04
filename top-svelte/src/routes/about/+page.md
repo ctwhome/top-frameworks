@@ -1,15 +1,17 @@
 # About This Project
 
-This is a **SvelteKit** application with **PocketBase** as the backend, now enhanced with **MDsveX** for markdown-powered pages!
+This is a modern **SvelteKit** starter template ready for your backend integration, enhanced with **MDsveX** for markdown-powered pages!
 
 ## Features
 
-- 🚀 SvelteKit 5 with Svelte Runes
-- 🗄️ PocketBase for backend and authentication
-- 🎨 DaisyUI + Tailwind CSS for styling
-- 📝 MDsveX for markdown content
-- ✅ Todo management with real-time updates
-- 📰 Blog posts system
+- 🚀 SvelteKit 2 with Svelte 5 Runes
+- 🔌 Backend-agnostic architecture - integrate any backend or database
+- 🗄️ Ready for Supabase, Firebase, PocketBase, Custom APIs, or any BaaS solution
+- 🎨 TailwindCSS 4 + DaisyUI for beautiful, responsive styling
+- 📝 MDsveX for markdown-powered content
+- 🔐 Backend-agnostic authentication interface
+- 🐳 Docker Compose ready
+- 💪 Full TypeScript support
 
 ## What is MDsveX?
 

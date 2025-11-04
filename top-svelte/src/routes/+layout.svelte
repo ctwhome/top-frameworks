@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Header from '$lib/components/ui/Header.svelte';
 	import SideMenu from '$lib/components/ui/SideMenu.svelte';
+	import Version from '$lib/components/ui/Version.svelte';
 
 	let { children } = $props();
 </script>
@@ -17,4 +18,5 @@
 	<main class="overflow-auto">
 		{@render children?.()}
 	</main>
+	<Version />
 </div>
