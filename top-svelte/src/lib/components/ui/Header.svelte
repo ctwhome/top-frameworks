@@ -25,7 +25,7 @@
 				<IconamoonMenuBurgerHorizontalBold class="size-6" />
 			</button>
 			<a
-				class="no-drag mr-3 h-auto max-w-[120px] flex-initial shrink-0 select-none sm:max-w-[160px]"
+				class="no-drag mr-3 h-auto w-30 sm:w-40 flex-initial shrink-0 select-none "
 				href="/"
 			>
 				<Logo />
