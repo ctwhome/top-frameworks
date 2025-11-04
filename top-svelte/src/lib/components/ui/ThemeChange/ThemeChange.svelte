@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import themes from './themes.json';
 	import type { Theme, ThemeChangeProps } from './types';
 
@@ -9,6 +10,7 @@
 	const themes_data: Theme[] = themes;
 
 	function setTheme(themeId: string) {
+		if (!browser) return;
 		document.documentElement.setAttribute('data-theme', themeId);
 		localStorage.setItem('theme', themeId);
 	}
