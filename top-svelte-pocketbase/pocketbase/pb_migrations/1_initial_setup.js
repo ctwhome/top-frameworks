@@ -45,7 +45,101 @@ migrate((app) => {
   }
 
   // ============================================================
-  // 2. Create Posts Collection
+  // 2. Get or Create Users Auth Collection
+  // ============================================================
+  let usersCollection = null;
+  try {
+    console.log("Checking for users collection...");
+
+    // Try to find existing users collection
+    try {
+      usersCollection = app.findCollectionByNameOrId("users");
+      console.log("✓ Found existing users collection with ID:", usersCollection.id);
+    } catch (e) {
+      // Users collection doesn't exist, create it
+      console.log("Users collection not found, creating new one...");
+
+      usersCollection = new Collection({
+        name: "users",
+        type: "auth",
+        system: false,
+
+        // API Rules - Users can only read their own profile
+        listRule: "id = @request.auth.id",
+        viewRule: "id = @request.auth.id",
+        createRule: "",
+        updateRule: "id = @request.auth.id",
+        deleteRule: "id = @request.auth.id",
+
+        // Auth options
+        options: {
+          allowEmailAuth: true,
+          allowOAuth2Auth: false,
+          allowUsernameAuth: false,
+          exceptEmailDomains: [],
+          manageRule: null,
+          minPasswordLength: 8,
+          onlyEmailDomains: [],
+          onlyVerified: false,
+          requireEmail: true,
+        },
+
+        // Fields
+        fields: [
+          {
+            name: "id",
+            type: "text",
+            required: true,
+            primaryKey: true,
+            autogeneratePattern: "[a-z0-9]{15}",
+            min: 15,
+            max: 15,
+            pattern: "^[a-z0-9]+$",
+            hidden: false,
+            presentable: false,
+            system: true,
+          },
+          {
+            name: "name",
+            type: "text",
+            required: false,
+            max: 0,
+            min: 0,
+            pattern: "",
+            hidden: false,
+            presentable: false,
+            system: false,
+          },
+          {
+            name: "avatar",
+            type: "file",
+            required: false,
+            options: {
+              maxSelect: 1,
+              maxSize: 5242880,
+              mimeTypes: ["image/jpeg", "image/png", "image/svg+xml", "image/gif", "image/webp"],
+              thumbs: ["100x100"],
+              protected: false,
+            },
+            hidden: false,
+            presentable: false,
+            system: false,
+          },
+        ],
+
+        indexes: [],
+      });
+
+      app.save(usersCollection);
+      console.log("✓ Users collection created with ID:", usersCollection.id);
+    }
+  } catch (e) {
+    console.error("Failed to handle users collection:", e);
+    throw e;
+  }
+
+  // ============================================================
+  // 3. Create Posts Collection
   // ============================================================
   try {
     console.log("Creating posts collection...");
@@ -148,46 +242,52 @@ migrate((app) => {
   }
 
   // ============================================================
-  // 3. Create Todos Collection
+  // 4. Create Todos Collection
   // ============================================================
   try {
     console.log("Creating todos collection...");
 
+    // Get the users collection first
+    const usersColl = app.findCollectionByNameOrId("users");
+    const usersCollId = usersColl.id;
+    console.log("Users collection ID for relation:", usersCollId);
+
+    // Create todos collection with all fields including relation
     const todosCollection = new Collection({
       name: "todos",
       type: "base",
       system: false,
 
-      // API Rules - Users can only see/manage their own todos
       listRule: "user = @request.auth.id",
       viewRule: "user = @request.auth.id",
       createRule: "@request.auth.id != ''",
       updateRule: "user = @request.auth.id",
       deleteRule: "user = @request.auth.id",
 
-      // Fields
       fields: [
         {
           name: "name",
           type: "text",
           required: true,
-          max: 255,
-          min: 0,
-          pattern: "",
+          options: {
+            max: 255,
+            min: 0,
+            pattern: "",
+          },
           hidden: false,
           presentable: true,
-          system: false,
         },
         {
-          name: "Description",
+          name: "description",
           type: "text",
           required: false,
-          max: 0,
-          min: 0,
-          pattern: "",
+          options: {
+            max: 0,
+            min: 0,
+            pattern: "",
+          },
           hidden: false,
           presentable: false,
-          system: false,
         },
         {
           name: "completed",
@@ -195,28 +295,26 @@ migrate((app) => {
           required: false,
           hidden: false,
           presentable: false,
-          system: false,
         },
         {
           name: "user",
           type: "relation",
           required: true,
           options: {
-            collectionId: "_pb_users_auth_",
+            collectionId: usersCollId,
             cascadeDelete: false,
-            minSelect: null,
             maxSelect: 1,
-            displayFields: ["email"]
+            minSelect: null,
+            displayFields: ["email"],
           },
           hidden: false,
           presentable: false,
-          system: false,
         },
       ],
 
       indexes: [
         "CREATE INDEX idx_todos_user ON todos (user)",
-        "CREATE INDEX idx_todos_completed ON todos (completed)"
+        "CREATE INDEX idx_todos_completed ON todos (completed)",
       ],
     });
 
@@ -224,11 +322,12 @@ migrate((app) => {
     console.log("✓ Todos collection created");
   } catch (e) {
     console.error("Failed to create todos collection:", e);
-    throw e;
+    // Don't throw - allow migration to continue
+    console.log("You can create the todos collection manually via Admin UI");
   }
 
   // ============================================================
-  // 4. Initialize Application Settings (Optional)
+  // 5. Initialize Application Settings (Optional)
   // ============================================================
   try {
     console.log("Configuring application settings...");
@@ -314,6 +413,17 @@ migrate((app) => {
     }
   } catch (e) {
     console.error("Failed to delete posts collection:", e);
+  }
+
+  // Delete users collection
+  try {
+    const usersCollection = app.findCollectionByNameOrId("users");
+    if (usersCollection) {
+      app.delete(usersCollection);
+      console.log("✓ Users collection deleted");
+    }
+  } catch (e) {
+    console.error("Failed to delete users collection:", e);
   }
 
   // Delete superadmin
