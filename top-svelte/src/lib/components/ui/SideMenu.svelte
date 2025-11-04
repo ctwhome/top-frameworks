@@ -8,6 +8,7 @@
 	import { authStore } from '$lib/auth';
 	import Login from '$lib/components/ui/Login/LoginButton.svelte';
 	import LanguageSwitcher from '$lib/components/ui/LanguageSwitcher.svelte';
+	import ThemeChange from './ThemeChange/ThemeChange.svelte';
 
 	let containerElement: HTMLElement | undefined = $state();
 	let startX: number;
@@ -135,6 +136,7 @@
 				<div class="mb-2 text-xs font-semibold uppercase text-base-content/60">Language</div>
 				<LanguageSwitcher />
 			</div>
+			<ThemeChange class="z-50 ml-auto" />
 		</div>
 
 		<FeedbackButton />
