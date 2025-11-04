@@ -1,0 +1,6 @@
+{
+  "window.title": "📘 Top Sveltekit Pocketbase - ${activeEditorShort}",
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "master"
+  ]
+}
