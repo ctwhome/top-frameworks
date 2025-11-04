@@ -1,0 +1,6 @@
+{
+  "window.title": "🛎️ Top Frameworks - ${activeEditorShort}",
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "master"
+  ]
+}
