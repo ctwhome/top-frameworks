@@ -48,9 +48,11 @@
 			<!-- Right side buttons -->
 			<div class="sm:ml-14" />
 
-			<FeedbackButton class="hidden sm:block" />
-			<LanguageSwitcher />
-			<ThemeChange class="z-50 ml-auto" />
+			<div  class="hidden sm:block" >
+				<FeedbackButton/>
+				<LanguageSwitcher />
+				<ThemeChange class="z-50 ml-auto" />
+			</div>
 
 			<Login />
 		</header>
