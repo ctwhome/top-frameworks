@@ -1,0 +1,28 @@
+services:
+  # Frontend development server
+  frontend:
+    image: oven/bun:1
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - '${FRONTEND_PORT:-5173}:5173'
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+    command: sh -c "bun install && bun run dev -- --host 0.0.0.0 --port 5173"
+    restart: unless-stopped
+
+  # Add your backend service here
+  # Example for a custom API:
+  # backend:
+  #   image: node:20-alpine
+  #   working_dir: /app
+  #   volumes:
+  #     - ./backend:/app
+  #   ports:
+  #     - '3000:3000'
+  #   environment:
+  #     - DATABASE_URL=${DATABASE_URL}
+  #   command: npm run dev
+  #   restart: unless-stopped
