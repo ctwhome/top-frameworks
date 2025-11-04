@@ -45,9 +45,12 @@
 				{/each}
 			</div>
 
+			<!-- Right side buttons -->
+			<div class="sm:ml-14" />
+
 			<FeedbackButton class="hidden sm:block" />
 			<LanguageSwitcher />
-			<ThemeChange class="z-50 ml-auto sm:ml-14 " />
+			<ThemeChange class="z-50 ml-auto" />
 
 			<Login />
 		</header>

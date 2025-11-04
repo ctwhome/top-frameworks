@@ -38,7 +38,7 @@
 <div class="dropdown dropdown-end">
 	<button
 		type="button"
-		class="btn btn-ghost btn-sm gap-2"
+		class="btn  btn-sm gap-2"
 		onclick={toggleDropdown}
 		aria-label="Change language"
 		aria-haspopup="true"
