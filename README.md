@@ -18,7 +18,7 @@ A modern full-stack template using SvelteKit for the frontend and PocketBase as 
 ## Prerequisites
 
 - [Docker](https://www.docker.com/get-started) and Docker Compose
-- [Bun](https://bun.sh/) (for local development outside Docker)
+
 
 ## Quick Start
 
@@ -45,30 +45,28 @@ This will start:
 cp .env.example .env
 ```
 
-3. **Set up PocketBase Admin**
+3. **Automatic Setup (First Run)**
 
-On first run, visit `http://localhost:8090/_/` to create your admin account.
+On first run, PocketBase will automatically:
+- Create a superadmin user from environment variables (or defaults from `.env.example`)
+- Run all migrations to set up the database schema
+- Configure application settings
 
-4. **Import Database Schema**
+**Default superadmin credentials:**
+- Email: `admin@admin.local`
+- Password: `1234567890`
 
-Choose one of the following methods to set up the database schema:
+**⚠️ IMPORTANT:** Change these credentials immediately after first login!
 
-### Method 1: Import Collections (Recommended for Quick Start)
+To customize the admin credentials, create a `.env` file:
+```sh
+cp .env.example .env
+# Edit POCKETBASE_ADMIN_EMAIL and POCKETBASE_ADMIN_PASSWORD
+```
 
-1. Go to `http://localhost:8090/_/`
-2. Navigate to **Settings** → **Import/Export**
-3. Click **"Import collections"**
-4. Select `pocketbase/pb_schema/collections.json`
-5. Review and click **"Confirm"**
+4. **Access PocketBase Admin**
 
-### Method 2: Automatic Migrations (Recommended for Development)
-
-Migrations are automatically applied when PocketBase starts. The `pocketbase/pb_migrations/` directory contains:
-- `1_initial_schema.js` - Creates the todos collection with proper schema and API rules
-
-To verify migrations:
-1. Check PocketBase logs on startup
-2. Go to `http://localhost:8090/_/` and verify the `todos` collection exists
+Visit `http://localhost:8090/_/` and log in with your superadmin credentials.
 
 ### What's Included
 
@@ -77,17 +75,21 @@ The schema includes:
   - Email/password authentication
   - Minimum 8 character passwords
 
-- **todos** collection
-  - `name` (text, required) - Todo task name
-  - `completed` (boolean) - Completion status
-  - `Description` (text, optional) - Additional details
-  - `user` (relation) - Owner of the todo
-  - API Rules: Users can only see/edit their own todos
-
 - **posts** collection
   - `title` (text, required) - Post title
-  - `content` (editor) - Post content (supports rich text/markdown)
+  - `content` (editor, optional) - Post content (supports rich text/markdown)
+  - `published` (boolean, optional) - Publication status
+  - `description` (text, optional) - Post description/excerpt
   - Auto-generated `created` and `updated` timestamps
+  - API Rules: Public read access (list and view)
+
+- **todos** collection
+  - `name` (text, required, max 255) - Todo task name
+  - `Description` (text, optional) - Additional details about the todo
+  - `completed` (boolean, optional) - Completion status
+  - `user` (relation, required) - Owner of the todo (links to users collection)
+  - API Rules: Users can only see and manage their own todos
+  - Indexes: Optimized for user and completed status queries
 
 ## Development
 
@@ -96,81 +98,8 @@ The schema includes:
 ```sh
 # Start services
 docker compose up
-
-# Start in detached mode
-docker compose up -d
-
-# Stop services
-docker compose down
-
-# View logs
-docker compose logs -f
-
-# Rebuild containers
-docker compose up --build
 ```
 
-### Local Development (Without Docker)
-
-If you prefer to run locally:
-
-```sh
-# Install dependencies
-bun install
-
-# Start dev server
-bun run dev
-```
-
-**Note**: You'll need to run PocketBase separately for local development.
-
-## Project Structure
-
-```
-.
-├── src/              # SvelteKit application
-├── static/           # Static assets
-├── scripts/          # Utility scripts
-│   ├── seed-data.ts      # Generate test data with Faker.js
-│   ├── export-schema.sh  # Export PocketBase schema
-│   └── import-schema.sh  # Import PocketBase schema
-├── pocketbase/       # PocketBase database files
-│   ├── pb_data/          # PocketBase data (auto-generated, gitignored)
-│   ├── pb_schema/        # PocketBase schema exports
-│   │   └── collections.json  # Collections schema
-│   ├── pb_migrations/    # PocketBase migrations
-│   │   └── 1_initial_schema.js  # Initial schema migration
-│   └── pb_backups/       # PocketBase backups
-├── docker-compose.yml
-└── README.md
-```
-
-## PocketBase
-
-### Admin Dashboard
-
-Access the PocketBase admin UI at: `http://localhost:8090/_/`
-
-### Creating Collections
-
-1. Go to the admin dashboard
-2. Navigate to "Collections"
-3. Create your collections and define schemas
-4. Collections are automatically available via the REST API and real-time subscriptions
-
-### API Endpoints
-
-PocketBase automatically generates REST API endpoints:
-
-- `GET /api/collections/{collection}/records` - List records
-- `GET /api/collections/{collection}/records/{id}` - Get record
-- `POST /api/collections/{collection}/records` - Create record
-- `PATCH /api/collections/{collection}/records/{id}` - Update record
-- `DELETE /api/collections/{collection}/records/{id}` - Delete record
-
-### Real-time Subscriptions
-
-PocketBase supports real-time subscriptions for all collections. See the [PocketBase SDK documentation](https://pocketbase.io/docs/client-side-integration/) for implementation details.
 
 ### Schema Management
 
@@ -199,11 +128,39 @@ Or follow the manual steps:
 
 #### Migrations
 
-Migrations in `pocketbase/pb_migrations/` are automatically applied on PocketBase startup. To add new migrations:
+**Code-First Approach:**
 
-1. Make changes in PocketBase admin
-2. PocketBase can auto-generate migrations (see [PocketBase migrations docs](https://pocketbase.io/docs/migrations/))
-3. Or manually create migration files in `pocketbase/pb_migrations/`
+This project uses a code-first migration strategy. All database schema changes are defined in migration files in `pocketbase/pb_migrations/`.
+
+**Key Migration Files:**
+- `1_initial_setup.js` - Initial setup including superadmin creation and posts collection
+
+**How Migrations Work:**
+1. Migrations are automatically run when PocketBase starts (via `--migrationsDir` flag)
+2. On first run (empty `pb_data`), the initial migration creates:
+   - Superadmin user from environment variables
+   - All collections and their schemas
+   - Application settings
+3. PocketBase tracks which migrations have been applied in the `_migrations` table
+
+**Adding New Migrations:**
+
+To create a new migration:
+
+```sh
+# Start PocketBase container
+docker compose up -d pocketbase
+
+# Create a new migration file
+docker compose exec pocketbase /pb/pocketbase migrate create "your_migration_name"
+```
+
+Or manually create a migration file in `pocketbase/pb_migrations/` with the timestamp prefix format.
+
+**Important Notes:**
+- Superadmin is only created on first run (when no superusers exist)
+- Migration failures will stop PocketBase from starting
+- See [PocketBase migrations docs](https://pocketbase.io/docs/js-migrations/) for more details
 
 ### Seeding Test Data
 
@@ -239,6 +196,14 @@ Features:
 | `PUBLIC_POCKETBASE_URL` | PocketBase URL for browser | http://localhost:8090 |
 | `POCKETBASE_URL` | PocketBase URL for server-side requests | http://pocketbase:8090 |
 | `NODE_ENV` | Environment mode | development |
+| `POCKETBASE_ADMIN_EMAIL` | Superadmin email (first run only) | admin@admin.local |
+| `POCKETBASE_ADMIN_PASSWORD` | Superadmin password (first run only) | 1234567890 |
+| `SMTP_ENABLED` | Enable SMTP email sending | false |
+| `SMTP_HOST` | SMTP server hostname | - |
+| `SMTP_PORT` | SMTP server port | 587 |
+| `SMTP_USER` | SMTP username | - |
+| `SMTP_PASS` | SMTP password | - |
+| `SMTP_FROM` | Email sender (Name \<email@domain.com\>) | - |
 
 ## Building for Production
 

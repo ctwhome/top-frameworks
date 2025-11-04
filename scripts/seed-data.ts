@@ -64,7 +64,7 @@ async function promptUserEmail(): Promise<string> {
 	});
 }
 
-async function getOrCreateAdminUser(pb: PocketBase): Promise<string> {
+async function getOrCreateUser(pb: PocketBase): Promise<string> {
 	const userEmail = await promptUserEmail();
 
 	try {
@@ -74,14 +74,25 @@ async function getOrCreateAdminUser(pb: PocketBase): Promise<string> {
 		});
 
 		if (users.length > 0) {
-			console.log(`✅ Using user: ${users[0].email}`);
+			console.log(`✅ Found existing user: ${users[0].email}`);
 			return users[0].id;
 		}
-	} catch (err) {
-		console.error('Error fetching user:', err);
-	}
 
-	throw new Error(`User with email "${userEmail}" not found. Please create this user first in the PocketBase admin panel.`);
+		// User doesn't exist, create it
+		console.log(`📝 Creating new user: ${userEmail}...`);
+		const newUser = await pb.collection('users').create({
+			email: userEmail,
+			password: 'password123',
+			passwordConfirm: 'password123',
+			emailVisibility: true
+		});
+
+		console.log(`✅ Created new user: ${newUser.email} (password: password123)`);
+		return newUser.id;
+	} catch (err) {
+		console.error('Error with user:', err);
+		throw new Error(`Failed to get or create user "${userEmail}"`);
+	}
 }
 
 function generateTodo(userId: string): Todo {
@@ -151,12 +162,18 @@ async function seedTodos(pb: PocketBase, userId: string): Promise<void> {
 		const batchSize = Math.min(BATCH_SIZE, TODO_COUNT - i);
 		const todos = Array.from({ length: batchSize }, () => generateTodo(userId));
 
-		const promises = todos.map((todo) => pb.collection('todos').create(todo));
+		try {
+			const promises = todos.map((todo) => pb.collection('todos').create(todo));
+			await Promise.all(promises);
 
-		await Promise.all(promises);
-
-		const progress = Math.min(i + BATCH_SIZE, TODO_COUNT);
-		console.log(`  ✓ Created ${progress}/${TODO_COUNT} todos`);
+			const progress = Math.min(i + BATCH_SIZE, TODO_COUNT);
+			console.log(`  ✓ Created ${progress}/${TODO_COUNT} todos`);
+		} catch (error: any) {
+			console.error('\n❌ Failed to create todos batch:');
+			console.error('Error details:', JSON.stringify(error.response || error, null, 2));
+			console.error('\nSample todo data:', JSON.stringify(todos[0], null, 2));
+			throw error;
+		}
 	}
 
 	console.log('✅ All todos created!\n');
@@ -236,8 +253,8 @@ async function main() {
 		// Optionally clear existing data
 		await clearExistingData(pb);
 
-		// Get user to assign todos to
-		const userId = await getOrCreateAdminUser(pb);
+		// Get or create user to assign todos to
+		const userId = await getOrCreateUser(pb);
 
 		// Seed data
 		const startTime = Date.now();
