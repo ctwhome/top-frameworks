@@ -1,64 +1,55 @@
 <script lang="ts">
-	import { authStore } from '$lib/auth';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { TodoAccount } from '$lib/jazz/schema';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import toast from 'svelte-french-toast';
 
-	// Mock user profile data
-	let profileData = $state({
-		displayName: 'Demo User',
-		email: authStore.user?.email || 'demo@example.com',
-		bio: 'This is a mock profile showcasing the profile page functionality. Ready to connect to your backend!',
-		location: 'San Francisco, CA',
-		website: 'https://example.com',
-		joinDate: 'January 2024',
-		stats: {
-			posts: 42,
-			followers: 1234,
-			following: 567
-		}
+	// Jazz account state
+	const me = new AccountCoState(TodoAccount, {
+		resolve: { root: { todos: true }, profile: true }
 	});
 
 	let isEditing = $state(false);
-	let saveMessage = $state('');
-	let tempData = $state({
-		displayName: '',
-		email: '',
-		bio: '',
-		location: '',
-		website: '',
-		joinDate: '',
-		stats: { posts: 0, followers: 0, following: 0 }
-	});
-
-	// Redirect if not authenticated
-	onMount(() => {
-		if (!authStore.isAuthenticated) {
-			goto('/');
-		}
-	});
+	let editName = $state('');
 
 	function startEdit() {
-		isEditing = true;
-		tempData = { ...profileData };
-		saveMessage = '';
+		if (me.current?.profile) {
+			editName = me.current.profile.name || '';
+			isEditing = true;
+		}
 	}
 
 	function cancelEdit() {
 		isEditing = false;
-		tempData = { ...profileData };
+		editName = '';
 	}
 
 	function saveProfile() {
-		profileData = { ...tempData };
-		isEditing = false;
-		saveMessage = '✓ Profile updated successfully!';
-		setTimeout(() => {
-			saveMessage = '';
-		}, 3000);
+		if (!me.current?.profile) return;
+
+		try {
+			me.current.profile.$jazz.set('name', editName.trim() || 'Jazz User');
+			isEditing = false;
+			toast.success('Profile updated!');
+		} catch (error) {
+			console.error('Failed to update profile:', error);
+			toast.error('Failed to update profile');
+		}
 	}
+
+	// Compute todo stats
+	let todoStats = $derived(() => {
+		const todos = me.current?.root.todos || [];
+		const validTodos = todos.filter((t) => t != null);
+		return {
+			total: validTodos.length,
+			completed: validTodos.filter((t) => t.completed).length,
+			active: validTodos.filter((t) => !t.completed).length
+		};
+	});
 </script>
 
-{#if authStore.isAuthenticated}
+{#if me.current}
 	<div class="container mx-auto max-w-4xl px-4 py-8">
 		<!-- Profile Header -->
 		<div class="mb-8 rounded-lg border border-base-300 bg-base-100 p-6 shadow-md">
@@ -66,208 +57,151 @@
 				<!-- Avatar -->
 				<div class="avatar placeholder">
 					<div class="w-24 rounded-full bg-primary text-primary-content">
-						<span class="text-3xl">{profileData.displayName.charAt(0).toUpperCase()}</span>
+						<span class="text-3xl">
+							{me.current.profile?.name?.charAt(0)?.toUpperCase() || 'J'}
+						</span>
 					</div>
 				</div>
 
 				<!-- User Info -->
 				<div class="flex-1">
-					<h1 class="text-3xl font-bold">{profileData.displayName}</h1>
-					<p class="text-base-content/70">{profileData.email}</p>
-					<p class="mt-2 text-sm text-base-content/60">Member since {profileData.joinDate}</p>
+					{#if isEditing}
+						<input
+							type="text"
+							bind:value={editName}
+							class="input input-bordered mb-2 w-full max-w-xs"
+							placeholder="Your name"
+						/>
+						<div class="mt-2 flex gap-2">
+							<button class="btn btn-primary btn-sm" onclick={saveProfile}>Save</button>
+							<button class="btn btn-ghost btn-sm" onclick={cancelEdit}>Cancel</button>
+						</div>
+					{:else}
+						<h1 class="text-3xl font-bold">{me.current.profile?.name || 'Jazz User'}</h1>
+						<p class="text-base-content/70">Jazz Account</p>
+						<button class="btn btn-ghost btn-sm mt-2" onclick={startEdit}>Edit Name</button>
+					{/if}
 				</div>
-
-				<!-- Edit Button -->
-				{#if !isEditing}
-					<button onclick={startEdit} class="btn btn-primary btn-sm">
-						Edit Profile
-					</button>
-				{/if}
 			</div>
 		</div>
 
-		<!-- Stats -->
-		<div class="mb-8 grid grid-cols-3 gap-4">
-			<div class="rounded-lg border border-base-300 bg-base-100 p-4 text-center shadow-sm">
-				<div class="text-3xl font-bold text-primary">{profileData.stats.posts}</div>
-				<div class="text-sm text-base-content/60">Posts</div>
+		<!-- Todo Stats -->
+		<div class="mb-8 grid gap-6 md:grid-cols-3">
+			<div class="stat rounded-lg border border-base-300 bg-base-100 shadow">
+				<div class="stat-figure text-primary">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						class="inline-block h-8 w-8 stroke-current"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+						></path>
+					</svg>
+				</div>
+				<div class="stat-title">Total Todos</div>
+				<div class="stat-value text-primary">{todoStats().total}</div>
 			</div>
-			<div class="rounded-lg border border-base-300 bg-base-100 p-4 text-center shadow-sm">
-				<div class="text-3xl font-bold text-secondary">{profileData.stats.followers}</div>
-				<div class="text-sm text-base-content/60">Followers</div>
+
+			<div class="stat rounded-lg border border-base-300 bg-base-100 shadow">
+				<div class="stat-figure text-secondary">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						class="inline-block h-8 w-8 stroke-current"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+						></path>
+					</svg>
+				</div>
+				<div class="stat-title">Completed</div>
+				<div class="stat-value text-secondary">{todoStats().completed}</div>
 			</div>
-			<div class="rounded-lg border border-base-300 bg-base-100 p-4 text-center shadow-sm">
-				<div class="text-3xl font-bold text-accent">{profileData.stats.following}</div>
-				<div class="text-sm text-base-content/60">Following</div>
+
+			<div class="stat rounded-lg border border-base-300 bg-base-100 shadow">
+				<div class="stat-figure text-accent">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						class="inline-block h-8 w-8 stroke-current"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13 10V3L4 14h7v7l9-11h-7z"
+						></path>
+					</svg>
+				</div>
+				<div class="stat-title">Active</div>
+				<div class="stat-value text-accent">{todoStats().active}</div>
 			</div>
 		</div>
 
-		<!-- Profile Details / Edit Form -->
+		<!-- Jazz Account Info -->
 		<div class="rounded-lg border border-base-300 bg-base-100 p-6 shadow-md">
-			<h2 class="mb-4 text-2xl font-semibold">Profile Details</h2>
-
-			{#if saveMessage}
-				<div class="mb-4 rounded-lg border border-success bg-success/10 p-3 text-sm text-success">
-					{saveMessage}
+			<h2 class="mb-4 text-2xl font-bold">Jazz Account</h2>
+			<div class="space-y-4">
+				<div>
+					<h3 class="text-sm font-semibold text-base-content/70">Account ID</h3>
+					<p class="font-mono text-sm">{me.current.$jazz.id}</p>
 				</div>
-			{/if}
 
-			{#if isEditing}
-				<!-- Edit Form -->
-				<form onsubmit={(e) => { e.preventDefault(); saveProfile(); }} class="space-y-4">
-					<div>
-						<label for="displayName" class="mb-1 block text-sm font-medium">
-							Display Name
-						</label>
-						<input
-							id="displayName"
-							type="text"
-							bind:value={tempData.displayName}
-							class="input input-bordered w-full"
-							required
-						/>
-					</div>
+				<div class="divider"></div>
 
-					<div>
-						<label for="email" class="mb-1 block text-sm font-medium">
-							Email
-						</label>
-						<input
-							id="email"
-							type="email"
-							bind:value={tempData.email}
-							class="input input-bordered w-full"
-							required
-						/>
-					</div>
-
-					<div>
-						<label for="bio" class="mb-1 block text-sm font-medium">
-							Bio
-						</label>
-						<textarea
-							id="bio"
-							bind:value={tempData.bio}
-							class="textarea textarea-bordered w-full"
-							rows="4"
-						></textarea>
-					</div>
-
-					<div>
-						<label for="location" class="mb-1 block text-sm font-medium">
-							Location
-						</label>
-						<input
-							id="location"
-							type="text"
-							bind:value={tempData.location}
-							class="input input-bordered w-full"
-						/>
-					</div>
-
-					<div>
-						<label for="website" class="mb-1 block text-sm font-medium">
-							Website
-						</label>
-						<input
-							id="website"
-							type="url"
-							bind:value={tempData.website}
-							class="input input-bordered w-full"
-						/>
-					</div>
-
-					<div class="flex gap-3">
-						<button type="submit" class="btn btn-primary">
-							Save Changes
-						</button>
-						<button type="button" onclick={cancelEdit} class="btn btn-ghost">
-							Cancel
-						</button>
-					</div>
-				</form>
-			{:else}
-				<!-- View Mode -->
-				<div class="space-y-4">
-					<div>
-						<div class="text-sm font-medium text-base-content/60">Bio</div>
-						<p class="mt-1">{profileData.bio}</p>
-					</div>
-
-					<div>
-						<div class="text-sm font-medium text-base-content/60">Location</div>
-						<p class="mt-1">{profileData.location}</p>
-					</div>
-
-					<div>
-						<div class="text-sm font-medium text-base-content/60">Website</div>
-						<a
-							href={profileData.website}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="mt-1 text-primary hover:underline"
-						>
-							{profileData.website}
-						</a>
-					</div>
+				<div>
+					<h3 class="mb-2 text-lg font-semibold">Features</h3>
+					<ul class="space-y-2 text-base-content/70">
+						<li>✅ Real-time sync across devices</li>
+						<li>✅ Offline-first with automatic sync</li>
+						<li>✅ End-to-end encryption</li>
+						<li>✅ Automatic conflict resolution</li>
+						<li>✅ No backend code needed</li>
+					</ul>
 				</div>
-			{/if}
-		</div>
 
-		<!-- Mock Activity Section -->
-		<div class="mt-8 rounded-lg border border-base-300 bg-base-100 p-6 shadow-md">
-			<h2 class="mb-4 text-2xl font-semibold">Recent Activity</h2>
-			<div class="space-y-3">
-				<div class="flex items-center gap-3 rounded-lg border border-base-200 p-3">
-					<div class="text-2xl">📝</div>
-					<div class="flex-1">
-						<div class="font-medium">Published a new post</div>
-						<div class="text-sm text-base-content/60">2 hours ago</div>
-					</div>
-				</div>
-				<div class="flex items-center gap-3 rounded-lg border border-base-200 p-3">
-					<div class="text-2xl">👤</div>
-					<div class="flex-1">
-						<div class="font-medium">Followed 3 new users</div>
-						<div class="text-sm text-base-content/60">1 day ago</div>
-					</div>
-				</div>
-				<div class="flex items-center gap-3 rounded-lg border border-base-200 p-3">
-					<div class="text-2xl">⭐</div>
-					<div class="flex-1">
-						<div class="font-medium">Liked 15 posts</div>
-						<div class="text-sm text-base-content/60">3 days ago</div>
+				<div class="divider"></div>
+
+				<div class="alert alert-info">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						class="h-6 w-6 shrink-0 stroke-current"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+						></path>
+					</svg>
+					<div>
+						<h3 class="font-bold">Cross-Device Sync</h3>
+						<div class="text-xs">
+							To access your todos on another device, use Jazz's account secret when logging in
+							on that device. Jazz will provide this when you create your account.
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-
-		<!-- Note about mock data -->
-		<div class="alert alert-info mt-8">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				class="h-6 w-6 shrink-0 stroke-current"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-				></path>
-			</svg>
-			<span
-				>This is a mock profile page. All data is stored locally and will reset on page reload.
-				Ready to connect to your backend!</span
-			>
 		</div>
 	</div>
 {:else}
-	<div class="flex min-h-screen items-center justify-center">
-		<div class="text-center">
-			<h1 class="mb-4 text-2xl font-bold">Please log in to view your profile</h1>
-			<a href="/" class="btn btn-primary">Go to Home</a>
+	<div class="container mx-auto max-w-4xl px-4 py-8">
+		<div class="rounded-lg border border-base-300 bg-base-200 p-12 text-center">
+			<span class="loading loading-spinner loading-lg"></span>
+			<p class="mt-4 text-lg">Loading your profile...</p>
 		</div>
 	</div>
 {/if}

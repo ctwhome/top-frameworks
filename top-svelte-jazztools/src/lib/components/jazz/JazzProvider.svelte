@@ -6,13 +6,14 @@
 	 * - Real-time data sync across devices
 	 * - Offline-first data storage
 	 * - End-to-end encryption
-	 * - Built-in authentication
+	 * - Passkey authentication with recovery key
 	 *
 	 * This component should wrap the entire app in +layout.svelte
 	 */
 	import { JazzSvelteProvider } from 'jazz-tools/svelte';
 	import { TodoAccount } from '$lib/jazz/schema';
 	import { PUBLIC_JAZZ_API_KEY } from '$env/static/public';
+	import JazzAuth from './JazzAuth.svelte';
 
 	let { children } = $props();
 
@@ -23,5 +24,7 @@
 </script>
 
 <JazzSvelteProvider {sync} AccountSchema={TodoAccount}>
-	{@render children?.()}
+	<JazzAuth appName="Top Svelte Todo">
+		{@render children?.()}
+	</JazzAuth>
 </JazzSvelteProvider>

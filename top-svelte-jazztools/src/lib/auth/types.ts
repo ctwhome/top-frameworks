@@ -53,7 +53,7 @@ export interface AuthProvider {
 	/**
 	 * Check if user is authenticated
 	 */
-	isAuthenticated(): boolean;
+	isAuthenticated: boolean;
 
 	/**
 	 * Login with email and password
