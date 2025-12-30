@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import Logo from '$lib/assets/icons/Logo.svelte';
 	import FeedbackButton from '$lib/components/ui/feedback/FeedbackButton.svelte';
 	import LanguageSwitcher from '$lib/components/ui/LanguageSwitcher.svelte';
@@ -8,6 +9,9 @@
 	import ThemeChange from '$lib/components/ui/ThemeChange/ThemeChange.svelte';
 	import LoginModal from '$lib/components/ui/LoginModal.svelte';
 	import { authClient } from '$lib/auth/auth-client';
+
+	// App version from package.json (injected by Vite)
+	const version = browser ? __APP_VERSION__ : 'dev';
 
 	let activeCategory = $state('');
 	let isLoggingOut = $state(false);
@@ -68,11 +72,14 @@
 				<IconamoonMenuBurgerHorizontalBold class="size-6" />
 			</button>
 			<a
-				class="no-drag mr-3 h-auto w-30 sm:w-40 flex-initial shrink-0 select-none "
+				class="no-drag mr-3 h-auto w-30 sm:w-40 flex-initial shrink-0 select-none"
 				href="/"
 			>
 				<Logo />
 			</a>
+			<span class="badge badge-ghost badge-sm font-mono text-[10px] opacity-60">
+				v{version}
+			</span>
 			<div class="flex-1" />
 			<!-- Desktop menu -->
 			<div class="z-10 hidden w-full flex-1 justify-end space-x-4 sm:flex lg:space-x-8">
