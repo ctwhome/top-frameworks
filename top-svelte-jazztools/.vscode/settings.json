@@ -1,5 +1,5 @@
 {
-  "window.title": "📘 Top Sveltekit Pocketbase - ${activeEditorShort}",
+  "window.title": "📘 Top Sveltekit Jazztools - ${activeEditorShort}",
   "githubPullRequests.ignoredPullRequestBranches": [
     "master"
   ]
