@@ -1,19 +1,16 @@
-import type { Handle } from '@sveltejs/kit';
-
 /**
- * Server hooks
+ * SvelteKit Server Hooks
  *
- * Add your server-side auth handling here when integrating a backend.
- * Examples:
- * - Verify session tokens
- * - Refresh access tokens
- * - Inject user data into event.locals
+ * Integrates Better Auth middleware for handling authentication requests.
+ * Better Auth intercepts auth-related requests and handles them automatically.
  */
 
-export const handle: Handle = async ({ event, resolve }) => {
-	// Add your auth middleware here
-	// Example: event.locals.user = await getUserFromSession(event.cookies);
+import { auth } from '$lib/server/auth';
+import { svelteKitHandler } from 'better-auth/svelte-kit';
+import { building } from '$app/environment';
+import type { Handle } from '@sveltejs/kit';
 
-	const response = await resolve(event);
-	return response;
+export const handle: Handle = async ({ event, resolve }) => {
+	// Better Auth handler processes authentication requests
+	return svelteKitHandler({ event, resolve, auth, building });
 };

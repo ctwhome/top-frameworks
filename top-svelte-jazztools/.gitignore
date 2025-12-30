@@ -27,3 +27,6 @@ src/lib/paraglide
 
 # PocketBase
 pocketbase/pb_data
+
+# Local SQLite database
+db/*.db

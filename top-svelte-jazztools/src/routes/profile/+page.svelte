@@ -3,8 +3,13 @@
 	import { TodoAccount } from '$lib/jazz/schema';
 	import { goto } from '$app/navigation';
 	import toast from 'svelte-french-toast';
+	import { authClient } from '$lib/auth/auth-client';
 
-	// Jazz account state
+	// Better Auth session (for user display)
+	const session = authClient.useSession();
+	let user = $derived($session.data?.user);
+
+	// Jazz account state (for todo data)
 	const me = new AccountCoState(TodoAccount, {
 		resolve: { root: { todos: true }, profile: true }
 	});
@@ -55,17 +60,33 @@
 		<div class="mb-8 rounded-lg border border-base-300 bg-base-100 p-6 shadow-md">
 			<div class="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
 				<!-- Avatar -->
-				<div class="avatar placeholder">
-					<div class="w-24 rounded-full bg-primary text-primary-content">
-						<span class="text-3xl">
-							{me.current.profile?.name?.charAt(0)?.toUpperCase() || 'J'}
-						</span>
+				{#if user?.image}
+					<div class="avatar">
+						<div class="w-24 rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
+							<img src={user.image} alt={user.name || 'User'} />
+						</div>
 					</div>
-				</div>
+				{:else}
+					<div class="avatar placeholder">
+						<div class="w-24 rounded-full bg-primary text-primary-content">
+							<span class="text-3xl">
+								{user?.name?.charAt(0)?.toUpperCase() || me.current.profile?.name?.charAt(0)?.toUpperCase() || 'U'}
+							</span>
+						</div>
+					</div>
+				{/if}
 
 				<!-- User Info -->
 				<div class="flex-1">
-					{#if isEditing}
+					{#if user}
+						<!-- Authenticated with Better Auth -->
+						<h1 class="text-3xl font-bold">{user.name || 'User'}</h1>
+						<p class="text-base-content/70">{user.email}</p>
+						<div class="mt-2 flex items-center gap-2">
+							<span class="badge badge-success badge-sm">Google Account</span>
+							<span class="badge badge-info badge-sm">Synced</span>
+						</div>
+					{:else if isEditing}
 						<input
 							type="text"
 							bind:value={editName}
@@ -77,8 +98,8 @@
 							<button class="btn btn-ghost btn-sm" onclick={cancelEdit}>Cancel</button>
 						</div>
 					{:else}
-						<h1 class="text-3xl font-bold">{me.current.profile?.name || 'Jazz User'}</h1>
-						<p class="text-base-content/70">Jazz Account</p>
+						<h1 class="text-3xl font-bold">{me.current.profile?.name || 'Anonymous User'}</h1>
+						<p class="text-base-content/70">Local Jazz Account</p>
 						<button class="btn btn-ghost btn-sm mt-2" onclick={startEdit}>Edit Name</button>
 					{/if}
 				</div>
@@ -148,13 +169,20 @@
 			</div>
 		</div>
 
-		<!-- Jazz Account Info -->
+		<!-- Account Info -->
 		<div class="rounded-lg border border-base-300 bg-base-100 p-6 shadow-md">
-			<h2 class="mb-4 text-2xl font-bold">Jazz Account</h2>
+			<h2 class="mb-4 text-2xl font-bold">Account Details</h2>
 			<div class="space-y-4">
+				{#if user}
+					<div>
+						<h3 class="text-sm font-semibold text-base-content/70">Authentication</h3>
+						<p class="text-sm">Google OAuth via Better Auth</p>
+					</div>
+				{/if}
+
 				<div>
-					<h3 class="text-sm font-semibold text-base-content/70">Account ID</h3>
-					<p class="font-mono text-sm">{me.current.$jazz.id}</p>
+					<h3 class="text-sm font-semibold text-base-content/70">Jazz Account ID</h3>
+					<p class="font-mono text-xs break-all">{me.current.$jazz.id}</p>
 				</div>
 
 				<div class="divider"></div>
@@ -172,28 +200,51 @@
 
 				<div class="divider"></div>
 
-				<div class="alert alert-info">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						class="h-6 w-6 shrink-0 stroke-current"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-						></path>
-					</svg>
-					<div>
-						<h3 class="font-bold">Cross-Device Sync</h3>
-						<div class="text-xs">
-							To access your todos on another device, use Jazz's account secret when logging in
-							on that device. Jazz will provide this when you create your account.
+				{#if user}
+					<div class="alert alert-success">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							class="h-6 w-6 shrink-0 stroke-current"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+							></path>
+						</svg>
+						<div>
+							<h3 class="font-bold">Connected to Google</h3>
+							<div class="text-xs">
+								Your data syncs across all devices where you sign in with this Google account.
+							</div>
 						</div>
 					</div>
-				</div>
+				{:else}
+					<div class="alert alert-info">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							class="h-6 w-6 shrink-0 stroke-current"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							></path>
+						</svg>
+						<div>
+							<h3 class="font-bold">Sign in for Cross-Device Sync</h3>
+							<div class="text-xs">
+								Sign in with Google to sync your todos across all your devices.
+							</div>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

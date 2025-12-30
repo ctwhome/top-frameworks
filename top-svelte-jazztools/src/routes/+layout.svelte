@@ -5,6 +5,7 @@
 	import SideMenu from '$lib/components/ui/SideMenu.svelte';
 	import Version from '$lib/components/ui/Version.svelte';
 	import JazzProvider from '$lib/components/jazz/JazzProvider.svelte';
+	import JazzBetterAuthSetup from '$lib/components/jazz/JazzBetterAuthSetup.svelte';
 
 	let { children } = $props();
 </script>
@@ -14,12 +15,14 @@
 </svelte:head>
 
 <JazzProvider>
-	<div class="relative grid h-dvh w-dvw grid-rows-[auto_1fr] overflow-hidden">
-		<Header />
-		<SideMenu />
-		<main class="overflow-auto">
-			{@render children?.()}
-		</main>
-		<Version />
-	</div>
+	<JazzBetterAuthSetup>
+		<div class="relative grid h-dvh w-dvw grid-rows-[auto_1fr] overflow-hidden">
+			<Header />
+			<SideMenu />
+			<main class="overflow-auto">
+				{@render children?.()}
+			</main>
+			<Version />
+		</div>
+	</JazzBetterAuthSetup>
 </JazzProvider>

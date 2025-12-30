@@ -5,10 +5,49 @@
 	import FeedbackButton from '$lib/components/ui/feedback/FeedbackButton.svelte';
 	import { onMount } from 'svelte';
 	import menuItems from '$lib/models/menu-itmes';
-	import { authStore } from '$lib/auth';
-	import Login from '$lib/components/ui/Login/LoginButton.svelte';
+	import LoginModal from '$lib/components/ui/LoginModal.svelte';
 	import LanguageSwitcher from '$lib/components/ui/LanguageSwitcher.svelte';
 	import ThemeChange from './ThemeChange/ThemeChange.svelte';
+	import { authClient } from '$lib/auth/auth-client';
+
+	// Better Auth session
+	const session = authClient.useSession();
+
+	// Check if user is authenticated via Better Auth
+	let isAuthenticated = $derived($session.data?.user != null);
+	let user = $derived($session.data?.user);
+
+	let showLoginModal = $state(false);
+
+	async function handleLogout() {
+		if (typeof window === 'undefined') return;
+
+		try {
+			// Sign out from Better Auth
+			await authClient.signOut();
+
+			// Clear Jazz local data
+			const keysToRemove: string[] = [];
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+				if (key) keysToRemove.push(key);
+			}
+			keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+			// Clear IndexedDB databases used by Jazz
+			const databases = await window.indexedDB.databases();
+			for (const db of databases) {
+				if (db.name) window.indexedDB.deleteDatabase(db.name);
+			}
+
+			setTimeout(() => {
+				window.location.href = '/';
+			}, 200);
+		} catch (error) {
+			console.error('Logout error:', error);
+			window.location.href = '/';
+		}
+	}
 
 	let containerElement: HTMLElement | undefined = $state();
 	let startX: number;
@@ -109,14 +148,39 @@
 	>
 		<div class="flex-1 overflow-y-auto pt-16">
 			<!-- Auth Status -->
-			{#if authStore.isAuthenticated}
+			{#if $session.isPending}
+				<div class="mb-6 flex items-center gap-2 text-sm text-base-content/70">
+					<span class="loading loading-spinner loading-sm"></span>
+					<span>Loading...</span>
+				</div>
+			{:else if isAuthenticated && user}
 				<div class="mb-6 rounded-lg border border-success bg-success/10 p-3">
-					<p class="text-sm font-medium text-success">Logged in</p>
-					<p class="text-xs text-base-content/70">{authStore.user?.email}</p>
+					<div class="flex items-center gap-2">
+						{#if user.image}
+							<img src={user.image} alt={user.name || 'User'} class="size-8 rounded-full" />
+						{/if}
+						<div>
+							<p class="text-sm font-medium text-success">Signed in</p>
+							<p class="text-xs text-base-content/70">{user.name || user.email}</p>
+						</div>
+					</div>
+					<button
+						type="button"
+						class="btn btn-ghost btn-sm mt-2 w-full text-error"
+						onclick={handleLogout}
+					>
+						Logout
+					</button>
 				</div>
 			{:else}
 				<div class="mb-6">
-					<Login />
+					<button
+						type="button"
+						class="btn btn-primary w-full"
+						onclick={() => (showLoginModal = true)}
+					>
+						Sign In with Google
+					</button>
 				</div>
 			{/if}
 
@@ -154,6 +218,13 @@
 		></button>
 	{/if}
 </div>
+
+<!-- Login Modal -->
+<LoginModal
+	appName="Top Svelte Todo"
+	isOpen={showLoginModal}
+	onClose={() => (showLoginModal = false)}
+/>
 
 <style>
 	.side-menu-container {

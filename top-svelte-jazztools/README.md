@@ -1,341 +1,185 @@
-# Top Svelte - Jazz.tools Todo App
+# Top Svelte Jazz Todo
 
-A production-ready SvelteKit application with **Jazz.tools** integration, featuring a complete todo list application with real-time sync, offline support, and collaborative features.
+A production-ready SvelteKit todo application with **Jazz.tools** for real-time sync and **Better Auth** for Google OAuth.
 
-## ✨ Features
 
-- **SvelteKit 2** with **Svelte 5** (latest runes API)
-- **Jazz.tools** - Real-time collaborative database as a service
-- **TailwindCSS 4** + **DaisyUI** for beautiful, responsive UI
-- **TypeScript** - Full type safety
-- **Bun** - Fast package manager and runtime
-- **Production-Ready** - Complete todo app with all CRUD operations
+## Tech Stack
+![Tech Stack](README.excalidraw.png)
 
-## 🎯 Jazz.tools Integration
+| Technology | Purpose |
+|------------|---------|
+| **SvelteKit 2** | Full-stack framework |
+| **Svelte 5** | UI with runes (`$state`, `$derived`, `$effect`) |
+| **Jazz.tools** | Real-time sync, offline-first, end-to-end encryption |
+| **Better Auth** | Google OAuth authentication |
+| **SQLite** | Local auth database (dev) |
+| **Turso** | Cloud SQLite database (production) |
+| **TailwindCSS 4** | Utility-first styling |
+| **DaisyUI** | UI component library |
+| **TypeScript** | Type safety |
+| **Bun** | Package manager & runtime |
 
-This project showcases Jazz.tools as the backend, providing:
+## Features
 
-- **Real-time Sync** - Changes appear instantly across all devices
-- **Offline-First** - Work offline, sync automatically when online
-- **End-to-End Encryption** - Data encrypted by default
-- **Automatic Conflict Resolution** - Jazz CRDTs handle concurrent edits
-- **No Backend Code** - Jazz handles all server-side logic
-- **Built-in Authentication** - Passkey/passphrase based auth
+- Real-time sync across devices
+- Offline-first with automatic sync
+- End-to-end encryption
+- Google OAuth sign-in
+- Todo CRUD with subtasks, priorities, due dates
+- Responsive design with dark mode
 
-## 📋 Todo App Features
-
-The application includes a full-featured todo list with:
-
-- ✅ **Add/Edit/Delete** todos
-- ✅ **Mark complete/incomplete**
-- ✅ **Priority levels** (low, medium, high)
-- ✅ **Due dates** with overdue detection
-- ✅ **Categories/tags** for organization
-- ✅ **Nested subtasks** for complex todos
-- ✅ **Filtering** (all/active/completed)
-- ✅ **Real-time sync** across devices
-- ✅ **Offline support** with automatic sync
-
-## 🚀 Quick Start
+## Development Setup
 
 ### Prerequisites
 
-- **Node.js 20+** (Jazz requires Node 20 or later)
-- **Bun** (package manager)
+- **Bun** - [Install Bun](https://bun.sh)
+- **Node.js 20+** - Required by Jazz
 
-### Setup
+### 1. Install dependencies
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd top-svelte-jazztools
-```
-
-2. **Install dependencies**
 ```bash
 bun install
 ```
 
-3. **Configure environment**
+### 2. Configure environment
 
-Create a `.env` file (already configured):
+Create `.env` file:
+
 ```bash
-PUBLIC_JAZZ_API_KEY=top-svelte@ctwhome.com  # Temporary key for development
+# Jazz
+PUBLIC_JAZZ_API_KEY=your-email@example.com
+
+# Better Auth
+BETTER_AUTH_SECRET=your-secret-key-min-32-characters
+PUBLIC_BETTER_AUTH_URL=http://localhost:5173
+
+# Google OAuth (https://console.cloud.google.com)
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
 ```
 
-For production, get a free API key at [dashboard.jazz.tools](https://dashboard.jazz.tools)
+### 3. Run database migrations
 
-4. **Start development server**
+Better Auth auto-generates schema from your config (`src/lib/server/auth.ts`):
+
 ```bash
-bun run dev
+bunx @better-auth/cli migrate
 ```
 
-The app will be available at `http://localhost:5173`
+This creates `db/better-auth.db` with tables:
+- `user` - User accounts (+ Jazz plugin fields: `accountID`, `encryptedCredentials`)
+- `session` - Active sessions
+- `account` - OAuth provider accounts (Google, etc.)
+- `verification` - Email verification tokens
 
-### First Run
+View current schema: `sqlite3 db/better-auth.db ".schema"`
 
-1. Open the app in your browser
-2. Click "Login" in the header
-3. Enter any email/password (8+ characters) to create an account
-4. Jazz automatically creates your account and syncs data
-5. Start adding todos!
+### 4. Start development server
 
-### Test Real-time Sync
-
-1. Open the app in two browser tabs
-2. Add/edit a todo in one tab
-3. Watch it appear instantly in the other tab 🎉
-
-## 🏗️ Project Structure
-
-```
-src/
-├── lib/
-│   ├── jazz/
-│   │   └── schema.ts         # Jazz CoValue schemas (Todo, Subtask, Account)
-│   ├── auth/
-│   │   ├── types.ts          # Auth interfaces
-│   │   ├── providers/
-│   │   │   └── jazz.ts       # Jazz auth adapter
-│   │   └── store.svelte.ts   # Auth store (exports Jazz provider)
-│   ├── components/
-│   │   ├── jazz/
-│   │   │   └── JazzProvider.svelte  # Jazz provider wrapper
-│   │   ├── todos/            # Todo components
-│   │   │   ├── TodoList.svelte
-│   │   │   ├── TodoItem.svelte
-│   │   │   ├── AddTodo.svelte
-│   │   │   ├── TodoFilters.svelte
-│   │   │   └── SubtaskList.svelte
-│   │   └── ui/               # Other UI components
-│   ├── stores/               # Application stores
-│   └── utils/                # Utility functions
-└── routes/                   # SvelteKit routes
-    ├── +layout.svelte        # Wraps app with JazzProvider
-    ├── +page.svelte          # Home page with todo app
-    └── ...
+```bash
+bun dev
 ```
 
-## 🔐 Authentication with Jazz
+Open http://localhost:5173
 
-Jazz provides built-in authentication that's seamlessly integrated:
+## Production Deployment (Vercel)
 
-### How It Works
+Vercel serverless functions can't use SQLite files, so we use [Turso](https://turso.tech) (cloud SQLite).
 
-1. **Account Creation** - Jazz automatically creates an account on first login
-2. **Passkey/Passphrase** - Secure authentication without traditional passwords
-3. **Cross-Device Sync** - Login from any device and access your data
-4. **Local-First** - Works offline, syncs when online
+### 1. Create Turso database
 
-### Auth Adapter
+```bash
+brew install tursodatabase/tap/turso
+turso auth login
+turso db create jazz-auth
+turso db show jazz-auth --url        # Copy URL
+turso db tokens create jazz-auth     # Copy token
+```
 
-The project includes a `JazzAuthProvider` that implements the `AuthProvider` interface, allowing existing auth UI components to work without modification:
+### 2. Update `src/lib/server/auth.ts`
 
 ```typescript
-// Import the Jazz-powered auth store
-import { authStore } from '$lib/auth';
+import { createClient } from '@libsql/client';
+import Database from 'better-sqlite3';
 
-// Same API as before, now powered by Jazz
-const result = await authStore.login({ email, password });
+const isDev = process.env.NODE_ENV === 'development';
+
+const database = isDev
+  ? new Database('db/better-auth.db')
+  : createClient({
+      url: process.env.TURSO_DATABASE_URL!,
+      authToken: process.env.TURSO_AUTH_TOKEN!
+    });
 ```
 
-### UI Components
+### 3. Add Vercel environment variables
 
-All existing auth components work with Jazz:
-- `LoginButton.svelte` - Login modal
-- `EmailLoginForm.svelte` - Login form
-- `RegisterForm.svelte` - Registration form
-- `LogOutButton.svelte` - Logout button
-
-## 🎨 Jazz Schema Design
-
-The todo app uses Jazz's CoValue schemas for collaborative data:
-
-```typescript
-// src/lib/jazz/schema.ts
-
-// Todo item with all features
-export const Todo = co.map({
-  title: z.string(),
-  completed: z.boolean(),
-  priority: z.literal(['low', 'medium', 'high']),
-  dueDate: z.optional(z.date()),
-  category: z.optional(z.string()),
-  createdAt: z.date(),
-  subtasks: co.optional(SubtaskList)
-});
-
-// Account with todo list
-export const TodoAccount = co
-  .account({
-    root: TodoAccountRoot,
-    profile: co.profile({ name: z.string() })
-  })
-  .withMigration((account) => {
-    // Initialize todos list on first login
-    if (!account.$jazz.has('root')) {
-      account.$jazz.set('root', { todos: [] });
-    }
-  });
+```
+PUBLIC_JAZZ_API_KEY=your-production-key
+BETTER_AUTH_SECRET=your-production-secret
+PUBLIC_BETTER_AUTH_URL=https://your-domain.vercel.app
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+TURSO_DATABASE_URL=libsql://your-db.turso.io
+TURSO_AUTH_TOKEN=your-turso-token
 ```
 
-### Jazz Concepts
-
-- **CoMap** - Like a JavaScript object, for structured data
-- **CoList** - Like an array, for ordered lists
-- **CRDTs** - Conflict-free replicated data types that sync automatically
-- **Reactive** - Changes propagate instantly via Svelte 5 runes
-
-## 📊 Jazz Cloud
-
-This project uses Jazz Cloud for sync and storage:
-
-- **Free tier available** - Perfect for development and small apps
-- **Auto-scaling** - Jazz handles all infrastructure
-- **Global CDN** - Fast sync worldwide
-- **Self-hosting option** - Can host your own Jazz mesh if needed
-
-Get an API key at [dashboard.jazz.tools](https://dashboard.jazz.tools) for production use.
-
-## 📝 Available Scripts
+### 4. Run migrations & deploy
 
 ```bash
-# Development
-bun run dev          # Start dev server
-
-# Building
-bun run build        # Build for production
-bun run preview      # Preview production build
-
-# Code Quality
-bun run check        # Type check
-bun run lint         # Lint code
-bun run format       # Format code with Prettier
+TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... bunx @better-auth/cli migrate
+vercel
 ```
 
-## 🎨 Styling
+## Google OAuth Setup
 
-This template uses:
-- **TailwindCSS 4** - Utility-first CSS
-- **DaisyUI** - Beautiful component library
-- **Custom Theme** - Pre-configured with brand colors
-- **Responsive Design** - Mobile-first approach
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create project → APIs & Services → Credentials
+3. Create OAuth 2.0 Client ID (Web application)
+4. Add authorized redirect URIs:
+   - Development: `http://localhost:5173/api/auth/callback/google`
+   - Production: `https://your-domain.vercel.app/api/auth/callback/google`  // Or main app domain
+5. Copy Client ID and Secret to `.env`
 
-### Theme Configuration
-
-The custom "ctw" theme is configured in `tailwind.config.js`. Modify colors, fonts, and more to match your brand.
-
-## 🔧 Environment Variables
-
-Copy `.env.example` to `.env` and configure for your backend:
+## Scripts
 
 ```bash
-cp .env.example .env
+bun dev          # Development server
+bun build        # Production build
+bun preview      # Preview build
+bun check        # Type check
+bun lint         # Lint code
+bun format       # Format code
 ```
 
-Examples provided for:
-- Custom APIs
-- Supabase
-- Firebase
-- PocketBase
+## Architecture
 
-## 📦 Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| SvelteKit 2 | Full-stack framework |
-| Svelte 5 | UI components with runes |
-| TailwindCSS 4 | Styling |
-| DaisyUI | UI components |
-| TypeScript | Type safety |
-| Bun | Package manager & runtime |
-| Docker | Containerization |
-
-## 🎯 Key Concepts Demonstrated
-
-This project showcases:
-
-- ✅ **Local-First Architecture** - Data lives on device, syncs in background
-- ✅ **Real-Time Collaboration** - See changes from other devices instantly
-- ✅ **Offline Support** - Full functionality without internet
-- ✅ **Svelte 5 Runes** - Modern reactive programming with `$state`, `$derived`, `$effect`
-- ✅ **TypeScript Safety** - Full type checking for Jazz schemas
-- ✅ **Component Architecture** - Modular, reusable UI components
-- ✅ **DaisyUI Design** - Beautiful UI with minimal custom CSS
-
-## 🧪 Testing the App
-
-### Test Real-Time Sync
-
-1. Open the app in two browser windows side-by-side
-2. Add a todo in one window
-3. Watch it appear instantly in the other! ⚡
-
-### Test Offline Support
-
-1. Open browser DevTools → Network tab
-2. Toggle "Offline" mode
-3. Add/edit todos - they work offline!
-4. Toggle back online - changes sync automatically 🔄
-
-### Test Subtasks
-
-1. Add a todo
-2. Click "▶ Subtasks (0)" to expand
-3. Add subtasks within the todo
-4. Check them off as you complete them ✓
-
-## 📖 Architecture Principles
-
-- **Modularity** - Each feature is self-contained
-- **Type Safety** - TypeScript throughout
-- **Backend Agnostic** - Swap backends without touching UI
-- **Developer Experience** - Fast, modern tooling
-- **Production Ready** - Error handling, validation, best practices
-
-## 🚦 Next Steps
-
-1. **Try the Auth UI** - Click login and test with any email/password (8+ chars)
-2. **Choose Your Backend** - Pick your favorite BaaS or API
-3. **Implement AuthProvider** - Follow the integration guide above
-4. **Start Building** - Add your routes, components, and features
-
-## 🔧 Development
-
-```bash
-# Type checking
-bun run check
-
-# Linting
-bun run lint
-
-# Format code
-bun run format
-
-# Build for production
-bun run build
-
-# Preview production build
-bun run preview
+```
+┌─────────────────────────────────────────────────────┐
+│                    SvelteKit App                     │
+├─────────────────────────────────────────────────────┤
+│  JazzProvider (DemoAuth - anonymous accounts)        │
+│    └── JazzBetterAuthSetup (connects Jazz ↔ Auth)   │
+│          └── App Components                          │
+├─────────────────────────────────────────────────────┤
+│  Better Auth          │  Jazz.tools                  │
+│  - Google OAuth       │  - Real-time sync            │
+│  - Session mgmt       │  - Offline-first             │
+│  - User accounts      │  - E2E encryption            │
+├─────────────────────────────────────────────────────┤
+│  SQLite (dev)         │  Jazz Cloud                  │
+│  Turso (prod)         │  (sync server)               │
+└─────────────────────────────────────────────────────┘
 ```
 
-## 📚 Resources
+## Resources
 
-- [Jazz.tools Documentation](https://jazz.tools/docs)
-- [Jazz.tools Examples](https://github.com/garden-co/jazz/tree/main/examples)
-- [SvelteKit Documentation](https://svelte.dev/docs/kit)
-- [Svelte 5 Documentation](https://svelte.dev/docs/svelte)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs)
-- [DaisyUI Documentation](https://daisyui.com/)
+- [Jazz.tools Docs](https://jazz.tools/docs)
+- [Better Auth Docs](https://better-auth.com/docs)
+- [Jazz + Better Auth](https://jazz.tools/docs/key-features/authentication/better-auth)
+- [Turso Docs](https://docs.turso.tech)
+- [SvelteKit Docs](https://svelte.dev/docs/kit)
 
-## 🤝 Contributing
-
-This is a demonstration project showcasing Jazz.tools with SvelteKit. Feel free to use it as a starting point for your own projects!
-
-## 📄 License
+## License
 
 MIT
-
----
-
-**Ready to build something amazing!** 🎉
