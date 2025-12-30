@@ -86,6 +86,8 @@ Open http://localhost:5173
 
 Vercel serverless functions can't use SQLite files, so we use [Turso](https://turso.tech) (cloud SQLite).
 
+> **Alternative:** Deploy on a Bun server (VPS, Railway, Fly.io) with `bun:sqlite` - simpler and cheaper for small apps.
+
 ### 1. Create Turso database
 
 ```bash
