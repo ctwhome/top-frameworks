@@ -5,10 +5,15 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, searchForWorkspaceRoot } from 'vite';
 import Icons from 'unplugin-icons/vite';
 import path from 'node:path';
-import { readFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 
-// Read version from package.json
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
+const getVersion = (): string => {
+	try {
+		return execSync('git describe --tags --always').toString().trim();
+	} catch {
+		return 'dev';
+	}
+};
 
 export default defineConfig({
 	server: {
@@ -20,7 +25,7 @@ export default defineConfig({
 		}
 	},
 	define: {
-		__APP_VERSION__: JSON.stringify(pkg.version),
+		__APP_VERSION__: JSON.stringify(getVersion()),
 		__BUILD_DATE__: JSON.stringify(new Date().toISOString())
 	},
 	plugins: [
