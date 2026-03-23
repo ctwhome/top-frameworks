@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>semver</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+    .version {
+      font-size: 4rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    .version .v { color: #555; }
+    .version .major { color: #ef4444; }
+    .version .dot { color: #333; }
+    .version .minor { color: #eab308; }
+    .version .patch { color: #22c55e; }
+    .label {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #555;
+    }
+    .label span:nth-child(1) { color: #ef4444; }
+    .label span:nth-child(2) { color: #eab308; }
+    .label span:nth-child(3) { color: #22c55e; }
+    footer {
+      margin-top: 3rem;
+      font-size: 0.8rem;
+      color: #444;
+    }
+    footer a { color: #666; text-decoration: none; }
+    footer a:hover { color: #fafafa; }
+  </style>
+</head>
+<body>
+  <div id="app" class="container">
+    <h1>current version</h1>
+    <div id="version-display" class="version">
+      <span class="v">v</span><span class="major">0</span><span class="dot">.</span><span class="minor">0</span><span class="dot">.</span><span class="patch">0</span>
+    </div>
+    <div class="label">
+      <span>major</span>
+      <span>minor</span>
+      <span>patch</span>
+    </div>
+    <footer>
+      <a href="https://github.com/ctwhome/semver/releases">view all releases</a>
+    </footer>
+  </div>
+</body>
+</html>
