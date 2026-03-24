@@ -50,11 +50,19 @@ export default defineConfig({
 });
 ```
 
-In dev, `git describe` shows how far you are from the last release:
+During development, `git describe` tells you exactly where you stand:
 
 ```bash
 git describe --tags --always
-# → v1.2.3-7-gabcdef1  (7 commits ahead of v1.2.3)
+
+# Before any release:
+a3f5b2c                       # just a commit hash
+
+# 3 commits after v1.0.0:
+v1.0.0-3-ga3f5b2c             # 3 commits ahead of v1.0.0
+
+# Right after a release:
+v1.1.0                         # you're on the release
 ```
 
 ## Setup for a New Project
